@@ -1,0 +1,128 @@
+from pickletools import pybytes_or_str   
+import pygame
+import sys
+import random
+import pygame.mixer
+
+# Initialize the game
+pygame.init()
+
+# Set up the screen
+screen_width = 800
+screen_height = 600
+screen = pygame.display.set_mode((screen_width, screen_height))
+pygame.display.set_caption("The Wrong Direction")
+
+# Set up the colors
+bg_color = (125, 125, 125)
+road_color = (50, 50, 50)
+line_color = (255, 255, 0)
+car_color = (255, 0, 0)
+
+# Set up the car
+car_width = 50
+car_height = 100
+car_x = screen_width // 2 - car_width // 2
+car_y = screen_height - car_height - 10
+car_speed = 10
+
+# Set up the traffic
+traffic_width = 50
+traffic_height = 100
+traffic_x = random.randint(0, screen_width - traffic_width)
+traffic_y = -traffic_height
+traffic_speed = 40
+traffic_color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+
+# Set up the game clock
+clock = pygame.time.Clock()
+
+# Load and play the music
+pygame.mixer.init()
+pygame.mixer.music.load("C:/Users/bmsat/source/reposl/kontoollllllll/lmao.mp3")
+
+# Game variables
+score = 0
+score_font = pygame.font.SysFont(None, 36)
+
+# Function to check collision
+def check_collision(car_rect, traffic_rect):
+    return car_rect.colliderect(traffic_rect)
+
+# Function to generate random traffic color
+def generate_traffic_color():
+    return (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+
+# Game loop
+game_over = False
+while not game_over:
+    # Handle events
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+
+    # Move the car
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_LEFT]:
+        car_x -= 35
+    if keys[pygame.K_RIGHT]:
+        car_x += 35
+
+    # Move the traffic
+    traffic_y += traffic_speed
+
+    # Check collision
+    car_rect = pygame.Rect(car_x, car_y, car_width, car_height)
+    traffic_rect = pygame.Rect(traffic_x, traffic_y, traffic_width, traffic_height)
+    if check_collision(car_rect, traffic_rect):
+        game_over = True
+
+    # Reset the traffic if it goes off the screen
+    if traffic_y > screen_height:
+        traffic_x = random.randint(0, screen_width - traffic_width)
+        traffic_y = -traffic_height
+        score += 1
+        traffic_color = generate_traffic_color()
+        pygame.mixer.music.play()
+
+    # Update the screen
+    screen.fill(bg_color)
+
+    # Draw road background
+    pygame.draw.rect(screen, road_color, (0, 0, screen_width, screen_height))
+
+    # Draw road markings
+    line_width = 10
+    line_height = 80
+    line_gap = 120
+    line_x = screen_width // 2 - line_width // 2
+    for y in range(0, screen_height, line_gap):
+        pygame.draw.rect(screen, line_color, (line_x, y, line_width, line_height))
+
+    # Draw car and traffic
+    pygame.draw.rect(screen, car_color, (car_x, car_y, car_width, car_height))
+    pygame.draw.rect(screen, traffic_color, (traffic_x, traffic_y, traffic_width, traffic_height))
+
+    pygame.display.flip()
+
+    # Set the frame rate
+    clock.tick(60)
+
+# Game over screen
+while True:
+    # Handle events
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+
+    # Display game over message
+    game_over_text = pygame.font.SysFont(None, 36).render("   You crashed", True, (255, 255, 255))
+    score_text = pygame.font.SysFont(None, 36).render(f"You avoided {score} cars", True, (255, 255, 255))
+    screen.blit(game_over_text, (screen_width // 2 - 80, screen_height // 2 - 18))
+    screen.blit(score_text, (screen_width // 2 - 100, screen_height // 2 + 18))
+    pygame.display.flip()
+ 
+
+    
